@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Harun Davood">
+
+
+    <meta name="subtitle" content="software engineer, visual artist, musician">
+
+
+
+
+<title>Infrastructure as Code in the Wild West | Harun&#39;s Blog</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Harun&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/music">Music</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Harun&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/music">Music</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">Infrastructure as Code in the Wild West</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Harun Davood</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">December 31, 2020&nbsp;&nbsp;8:17:05</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <p>I am currently working as a DevOps engineer at a client that maintains a large and complex infrastructure with an even more complicated development workflow. What is unique about this client, is that it maintains six web applications, each for a different area in the United States. To avoid a maintenance nightmare, the same code is deployed to each application, but configured differently through a master configuration file. Each web application is also compromised of several sub applications, each with their own codebase. </p>
+<p>As a DevOps engineer at this client, one of my responsibilities is to spin up and maintain application stacks for new development teams that are working on a specific feature that may or may not be utilized by all six web applications. In order for this team to rapidly develop, they need a stable testing environment, equipped with continuous delivery, to do their work in. This “application stack” is compromised of 1 Azure App Service Plan, 6 App Services, 1 Redis Cache, and 1 Storage Account. </p>
+<p>Since the DevOps team at this client is small, we only had the capacity to create a script to deploy an application stack. We did not get the chance to implement any strategies around maintaining these stacks once they were deployed. Applying configurations that need to be applied across the 25-30 application stacks that we maintain has turned out to be a logistical nightmare. </p>
+<img src="/2020/12/31/IAC/IAC_current.png" class="" title="This is an example image">
+
+<p>The diagram above represents a high level overview of a single application stack that we need to maintain; the diagram is scaled down from 6 applications to 3 applications for clarity. The current script we use to provision application stacks does the following:</p>
+<ol>
+<li>Creates all azure resources</li>
+<li>Keyvault configuration<ol>
+<li>Enabled managed identity on all app services</li>
+<li>Adds access policy to keyvault for all app services</li>
+<li>Adds keyvault references for secret app settings on all app services</li>
+</ol>
+</li>
+<li>Creates 1 Azure DevOps release pipeline to deploy code to all app services; this is done by cloning a base template for a release pipeline that exists before the script is run.</li>
+</ol>
+<h2 id="The-Problem"><a href="#The-Problem" class="headerlink" title="The Problem"></a>The Problem</h2><p>Although the deployment script that is currently in use saves us a bunch of time, it falls short on a few things: </p>
+<ol>
+<li>If we want to make configuration changes across all the application stacks, we would have to make edits to the deployment script and run it again on each application stack. This process is entirely too manual, and can be improved. </li>
+<li>If we want to change the mechanics of how the release pipeline functions across all the application stacks, we would have to go and make edits on each release pipeline that is tied to a given application stack, which is extremely tedious and leaves lots of room for error.</li>
+<li>Configuration drift is widely prevalent; because we do not have an easy way to maintain all of the application environments across the board, minor configurations during development are difficult to track and many times fail to propagate to our main application stacks.</li>
+</ol>
+<h2 id="The-Solution-TEMPLATE-YOUR-LIFE"><a href="#The-Solution-TEMPLATE-YOUR-LIFE" class="headerlink" title="The Solution: TEMPLATE YOUR LIFE"></a>The Solution: TEMPLATE YOUR LIFE</h2><p>The client that I work for is relatively young in terms of their journey in the cloud, especially with Azure and Azure DevOps. Currently, our client relies heavily on Release Pipeline User Interface within Azure DevOps to deploy code to its applications. In recent years, Azure has been subtly urging teams to utilize multi-stage yaml templates instead of the Release Pipeline User Interface in order to adopt a “infrastructure as code” mindset to the continuous delivery process. </p>
+<p>As you can see, there is a large need to develop a framework and process around maintaining the cloud infrastructure and its respective continuous delivery process that is easy to manage and propagate changes through.</p>
+<p>I am currently developing a code repository that will contain:</p>
+<ol>
+<li>Azure ARM templates to version app service configurations (including virtual/sub applications)</li>
+<li>Deployment script to deploy ARM templates mentioned above</li>
+<li>Azure DevOps yaml files that will function as “release pipelines”:<ol>
+<li>Create / Refresh shared resources</li>
+<li>Create / Refresh 1 app services</li>
+</ol>
+</li>
+</ol>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># run on schedule instead of utilizing ci triggers</span></span><br><span class="line"><span class="attr">name:</span> <span class="string">$(Date:yyyyMMdd)$(Rev:.r)_$(app)_$(slotName)</span></span><br><span class="line"></span><br><span class="line"><span class="attr">schedules:</span></span><br><span class="line"><span class="bullet">-</span> <span class="attr">cron:</span> <span class="string">"0 */4 * * *"</span></span><br><span class="line">  <span class="attr">displayName:</span> <span class="number">4</span> <span class="string">times</span> <span class="string">a</span> <span class="string">day</span></span><br><span class="line">  <span class="attr">branches:</span></span><br><span class="line">    <span class="attr">include:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">master</span></span><br><span class="line"></span><br><span class="line"><span class="attr">trigger:</span></span><br><span class="line"><span class="bullet">-</span> <span class="string">none</span></span><br><span class="line"></span><br><span class="line"><span class="attr">variables:</span> </span><br><span class="line">  <span class="attr">app:</span> <span class="string">"POCEU"</span></span><br><span class="line">  <span class="attr">region:</span> <span class="string">"C"</span></span><br><span class="line">  <span class="attr">tier:</span> <span class="string">"S"</span></span><br><span class="line">  <span class="attr">keyvault:</span> <span class="string">"Stage"</span></span><br><span class="line">  <span class="attr">deployToSlot:</span> <span class="literal">true</span></span><br><span class="line">  <span class="attr">slotName:</span> <span class="string">'development'</span></span><br><span class="line">  <span class="attr">sharedEnvironment:</span> <span class="literal">false</span></span><br><span class="line">  <span class="attr">tierConfigJson:</span> <span class="string">"StageTier-config.json"</span></span><br><span class="line"></span><br><span class="line"><span class="attr">resources:</span></span><br><span class="line">  <span class="comment"># script and template reference</span></span><br><span class="line">  <span class="attr">repositories:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">repository:</span> <span class="string">templates</span></span><br><span class="line">      <span class="attr">type:</span> <span class="string">git</span></span><br><span class="line">      <span class="attr">name:</span> <span class="string">EU-DevOps/EU-Pipelines</span></span><br><span class="line">  <span class="attr">pipelines:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">pipeline:</span> <span class="string">eucoms</span></span><br><span class="line">      <span class="attr">project:</span> <span class="string">EUCOMS</span></span><br><span class="line">      <span class="attr">source:</span> <span class="string">YAML\eucoms</span></span><br><span class="line">      <span class="attr">branch:</span> <span class="string">stage</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">pipeline:</span> <span class="string">accounts</span></span><br><span class="line">      <span class="attr">project:</span> <span class="string">EUCOMS</span></span><br><span class="line">      <span class="attr">source:</span> <span class="string">YAML\accounts</span></span><br><span class="line">      <span class="attr">branch:</span> <span class="string">stage</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">pipeline:</span> <span class="string">poweroutages</span></span><br><span class="line">      <span class="attr">project:</span> <span class="string">EUCOMS</span></span><br><span class="line">      <span class="attr">source:</span> <span class="string">YAML\outages</span></span><br><span class="line">      <span class="attr">branch:</span> <span class="string">stage</span></span><br><span class="line">  <span class="comment"># pipeline artifact list (previously source artifacts in release pipeline)</span></span><br><span class="line"><span class="attr">extends:</span></span><br><span class="line">  <span class="attr">template:</span> <span class="string">release.yaml@templates</span></span><br></pre></td></tr></table></figure>
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Harun Davood</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://davoodharun.github.io/2020/12/31/IAC/">http://davoodharun.github.io/2020/12/31/IAC/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>Do you believe in <strong>DESTINY</strong>?</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+            
+            <a class="next" rel="next" href="/2020/09/25/TERRAFORM/">TERRAFORM</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Harun Davood | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
