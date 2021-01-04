@@ -265,6 +265,7 @@
 <p>This allows us to cut down on repeated code by using an extendable template for the variables needed for each deployment stage.</p>
 <h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>Infrastructure as code implemented in the continuous integration and delivery process can be equally as important as implementing it for your actual infrastructure. </p>
 <p>If you are working in a project that requires a complicated development lifecycle with multiple teams needing distinct environments, in becomes increasingly important to formulate a strategy around maintaining the various environments you need to maintain. Environment creation and code deployment should be as automated as possible. Applying configurations across all environments should be an easy task.</p>
+<p>What is even more apparent, is that development operation decisions should also be considered in architecture design. For example, the architecture I inherited did not foster the most efficient development and deployment workflow. For example, the decision to have “sub applications” exist on an individual app service - instead of assigning them to their own app services, limited us to having to do deploy the individual applications in series; you are limited to run one deployment at a time to a give app service. </p>
 
         </div>
 
