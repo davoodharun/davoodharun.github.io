@@ -189,7 +189,7 @@
         </header>
 
         <div class="post-content">
-            <p>I am currently working as a DevOps engineer at a client that maintains a large and complex infrastructure with an even more complicated development workflow. What is unique about this client, is that it maintains six web applications, each one for a different area in the United States. To avoid a maintenance nightmare, the same code is actually deployed to each application, but configured to run differently through the use of a master configuration file. Each web application is also compromised of several sub applications, each with their own codebase. </p>
+            <p>I am currently working as a development operations engineer at a client that maintains a large and complex infrastructure with an even more complicated development workflow. What is unique about this client, is that it maintains separate six web applications, each one designated for a different area in the United States. To avoid a maintenance nightmare, we use code from one repo to deploy the main UI of all six applications; the same code is actually deployed to each application, but configured to run differently through the use of a master configuration file. Each web application is also compromised of several sub applications, each with their own codebase. </p>
 <p>As a DevOps engineer at this client, one of my responsibilities is to spin up and maintain application stacks for new development teams that are working on a specific feature that may or may not be utilized by all six web applications. In order for this team to rapidly develop, they need a stable testing environment, equipped with continuous delivery, to do their work in. This “application stack” is compromised of 1 Azure App Service Plan, 6 App Services, 1 Redis Cache, and 1 Storage Account; these are Microsoft Azure constructs and are not important to understand in the context of this post - just keep in mind that there are 6 separate applications that utilize a set of shared resources.</p>
 <p>Since the DevOps team at this particular client is small, we only had the capacity to create a script to deploy an application stack for a particular development effort. We did not get the chance to implement any strategies around maintaining these stacks once they were deployed. As a result, applying configurations that need to be applied across the 25-30 application stacks that we maintain has turned out to be a logistical nightmare. </p>
 <img src="/2020/12/31/IAC/IAC_current.png" class="" title="This is an example image">
@@ -208,7 +208,7 @@
 <h2 id="The-Problem"><a href="#The-Problem" class="headerlink" title="The Problem"></a>The Problem</h2><p>Although the deployment script that is currently in use saves us a bunch of time, it falls short on a few things: </p>
 <ol>
 <li>If we want to make configuration changes across all the application stacks, we would have to make edits to the deployment script and run it again on each application stack. This process is entirely too manual, and can be improved. </li>
-<li>If we want to change the mechanics of how the release pipeline functions across all the application stacks, we would have to go and make edits on each release pipeline that is tied to a given application stack, which is extremely tedious and leaves lots of room for error.</li>
+<li>If we want to change the mechanics of how the underlying deployment pipeline functions across all the application stacks, we would have to go and make edits on each deployment pipeline that is tied to a given application stack, which is extremely tedious and leaves lots of room for error; we initially mitigated some of this by utilizing Azure DevOps task groups.</li>
 <li>Configuration drift is widely prevalent; because we do not have an easy way to maintain all of the application environments across the board, minor configurations during development are difficult to track and many times fail to propagate to our main application stacks.</li>
 </ol>
 <h2 id="The-Solution-TEMPLATE-YOUR-LIFE"><a href="#The-Solution-TEMPLATE-YOUR-LIFE" class="headerlink" title="The Solution: TEMPLATE YOUR LIFE"></a>The Solution: TEMPLATE YOUR LIFE</h2><h3 id="Azure-YAML-Templates"><a href="#Azure-YAML-Templates" class="headerlink" title="Azure YAML Templates"></a>Azure YAML Templates</h3><p>The client that I work for is relatively young in terms of their journey in the cloud, especially with Azure and Azure DevOps. Currently, our client relies heavily on Release Pipeline User Interface within Azure DevOps to deploy code to its applications. In recent years, Azure has been subtly urging teams to utilize multi-stage yaml templates instead of the Release Pipeline User Interface in order to adopt a “infrastructure as code” mindset to the continuous delivery process. With this mindset, there is no difference between “Build” pipelines and “Release” pipelines; the only construct is a <strong>pipeline</strong> where you can perform any type of task (build, test, deploy etc.).</p>
@@ -218,7 +218,7 @@
 <li><a href="https://docs.microsoft.com/en-us/azure/devops/pipelines/get-started/multi-stage-pipelines-experience?view=azure-devops" target="_blank" rel="noopener">Azure DevOps Multi Stage YAML UI Experience</a></li>
 <li><a href="https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema%2Cparameter-schema" target="_blank" rel="noopener">YAML Schema</a></li>
 </ul>
-<p>As you can see, there is a large need to develop a framework and process around maintaining the cloud infrastructure and its respective continuous delivery process that is easy to manage and propagate changes through.</p>
+<p>Given the problem statement above, there is a large need to develop a framework and process around maintaining the cloud infrastructure and its respective continuous delivery process that is easy to manage and propagate changes through.</p>
 <p>This is where Azure DevOps YAML templates really become useful. </p>
 <p>All you need in order to create a pipeline in Azure Devops is a yaml file. This yaml file can exist in any code repository. Once this file is imported into a code repository, you can use the Azure DeVops UI to create a pipeline from this file. While you can run the pipeline from the Azure DevOps UI, all changes done to the pipeline will be maintained and version within the YAML file itself, just like you would with any application code. </p>
 <p>This yaml file can inherit and reference other yaml file that exist in other code repositories.</p>
@@ -233,7 +233,7 @@
 </ol>
 </li>
 </ol>
-<p>When a new workstream or development effort begins, all they need to do is create a simple yaml file that extends from the main (release.yaml) template file in the repo mentioned above (see azurepipeline.yaml below).</p>
+<p>When a new workstream or development effort begins, all they need to do is create a simple yaml file that extends from the main (release.yaml) template file in the repo mentioned above (see azurepipeline.yaml below). Once that is done, the first time development team pushes code to a specified branch, they will be equipped with a fresh environment with their code changes.</p>
 <img src="/2020/12/31/IAC/templates.png" class="" title="This is an example image">
 
 <p>The diagram above represents the hierarchy of the templates in the code repository mentioned above. You can see there are only 7 yaml template files to maintain. The azurepipeline.yaml file inherits these template files. This helps address the problem discussed earlier that was related the daunting task of having to maintain 25+ release pipelines;  changes made to any of the template files will propagate to any azurepipeline.yaml files that inherit from the release.yaml file.<br>The idea is that we can import the  azurepipeline.yaml file that can be into any repo or branch. This file is relatively simple:</p>
@@ -303,6 +303,10 @@
                 <span>Tag(s):</span>
                 <span class="tag">
                     
+                    
+                        <a href="/tags/Azure-DevOps-Development-Operations-Continuous-Delivery/"># Azure DevOps, Development Operations, Continuous Delivery</a>
+                    
+                        
                 </span>
             </div>
             <div>
